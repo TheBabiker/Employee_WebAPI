@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace Employee_WebAPI.Controllers
@@ -10,40 +11,67 @@ namespace Employee_WebAPI.Controllers
     [Route("public/v2/users")]
     public class EmployeeController : ControllerBase
     {
-        private static List<Employee> employees = new List<Employee>{
-             new Employee(),
-             new Employee {Id= 1 ,Name = "Mohan Sethi", Email = "sethi_mohan@raynor.example", Gender = "male", Status = "active"},
-             new Employee {Name = "Shashikala Ahluwalia", Email = "shashikala_ahluwalia@mann.test", Gender = "female", Status = "active"},
-             new Employee {Name = "Dr. Chetanaanand Chopra", Email = "dr_chopra_chetanaanand@heidenreich-swaniawski.test", Gender = "male", Status = "inactive"},
-             new Employee {Name = "Anjushree Nair IV", Email = "iv_nair_anjushree@haag-langosh.test", Gender = "female", Status = "inactive"},
-             new Employee {Name = "Aishani Kaur VM", Email = "kaur_vm_aishani@ortiz.example", Gender = "female", Status = "inactive"},
-             new Employee {Name = "Mr. Aasha Dwivedi", Email = "mr_dwivedi_aasha@metz.example", Gender = "male", Status = "active"},
-             new Employee {Name = "Radha Dwivedi Ret", Email = "radha_ret_dwivedi@mraz-turcotte.test", Gender = "female", Status = "inactive"},
-             new Employee {Name = "Bhupati Rana", Email = "rana_bhupati@friesen.test", Gender = "female", Status = "active"},
-        };
+        private readonly IEmployeeService _employeeService;
+
+        public EmployeeController(IEmployeeService employeeService)
+        {
+            _employeeService = employeeService;
+        }
 
         [HttpGet]
-        public ActionResult<List<Employee>> Get()
+        public async Task<ActionResult<ServiceResponse<List<GetEmployeeRequestDto>>>> GetEmployees()
         {
-            return Ok(employees);
+            return Ok(await _employeeService.GetEmployees());
         }
 
         [HttpGet("first_name")]
-        public ActionResult<List<Employee>> GetEmployeeByFirstName([FromQuery(Name = "firstName")] string firstName)
+        public async Task<ActionResult<ServiceResponse<List<GetEmployeeRequestDto>>>> GetEmployeeByFirstName([FromQuery(Name = "firstName")] string firstName)
         {
-            return Ok(employees.Where(e => e.Name.ToLower().Contains(firstName.ToLower())).ToList());
+            var response = await _employeeService.GetEmployeeByFirstName(firstName);
+            if (response.Data is null)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Employee> GetEmployeeById(int id)
+        public async Task<ActionResult<ServiceResponse<GetEmployeeRequestDto>>> GetEmployeeById(int id)
         {
-            var employee = employees.FirstOrDefault(e => e.Id == id);
-            if (employee == null)
+            var response = await _employeeService.GetEmployeeById(id);
+            if (response.Data is null)
             {
-                return NotFound();
+                return NotFound(response);
             }
+            return Ok(response);
+        }
 
-            return Ok(employee);
+        [HttpPost]
+        public async Task<ActionResult<ServiceResponse<GetEmployeeRequestDto>>> AddEmployee(AddEmployeeRequestDto newEmployee)
+        {
+            return Ok(await _employeeService.AddEmployee(newEmployee));
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<ServiceResponse<GetEmployeeRequestDto>>> UpdateEmployee(UpdateEmployeeRequestDto updatedEmployee)
+        {
+            var response = await _employeeService.UpdateEmployee(updatedEmployee);
+            if (response.Data is null)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ServiceResponse<GetEmployeeRequestDto>>> DeleteEmployeeById(int id)
+        {
+            var response = await _employeeService.DeleteEmployee(id);
+            if (response.Data is null)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
         }
     }
 }

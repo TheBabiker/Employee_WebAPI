@@ -1,4 +1,10 @@
 global using Employee_WebAPI.Models;
+global using Employee_WebAPI.Services;
+global using Employee_WebAPI.DTOs.Employee;
+global using AutoMapper;
+
+
+using Employee_WebAPI.Services.EmployeeService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +14,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 var app = builder.Build();
 
