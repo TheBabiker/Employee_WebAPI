@@ -15,17 +15,23 @@ namespace Employee_WebAPI.Services.EmployeeService
 
         };
         private readonly IMapper _mapper;
+        private readonly DataContext _context;
 
-        public EmployeeService(IMapper mapper)
+        public EmployeeService(IMapper mapper, DataContext context)
         {
+            _context = context;
             _mapper = mapper;
+
         }
         public async Task<ServiceResponse<List<GetEmployeeRequestDto>>> GetEmployeeByFirstName(string firstName)
         {
             var serviceResponse = new ServiceResponse<List<GetEmployeeRequestDto>>();
             try
             {
-                var employeesWithFirstName = employees.Where(e => e.Name.ToLower().Split(' ')[0].Contains(firstName.ToLower())).ToList();
+                var dbEmployees = await _context.Employees.ToListAsync();
+                var employeesWithFirstName = dbEmployees.Where(e => e.Name.ToLower().Split(' ')[0]
+                .Contains(firstName.ToLower()))
+                .ToList();
 
                 if (employeesWithFirstName == null || employeesWithFirstName.Count == 0)
                 {
@@ -48,13 +54,13 @@ namespace Employee_WebAPI.Services.EmployeeService
 
             try
             {
-                var employee = employees.FirstOrDefault(e => e.Id == id);
-                if (employee == null)
+                var dbEmployees = await _context.Employees.FirstOrDefaultAsync(e => e.Id == id);
+                if (dbEmployees == null)
                 {
                     string errorMsg = $"Employee with Id:{id} not found.";
                     throw new Exception(errorMsg);
                 }
-                serviceResponse.Data = _mapper.Map<GetEmployeeRequestDto>(employee);
+                serviceResponse.Data = _mapper.Map<GetEmployeeRequestDto>(dbEmployees);
             }
             catch (Exception e)
             {
@@ -68,7 +74,8 @@ namespace Employee_WebAPI.Services.EmployeeService
         public async Task<ServiceResponse<List<GetEmployeeRequestDto>>> GetEmployees()
         {
             var serviceResponse = new ServiceResponse<List<GetEmployeeRequestDto>>();
-            serviceResponse.Data = employees.Select(e => _mapper.Map<GetEmployeeRequestDto>(e)).ToList();
+            var dbEmployees = await _context.Employees.ToListAsync();
+            serviceResponse.Data = dbEmployees.Select(e => _mapper.Map<GetEmployeeRequestDto>(e)).ToList();
 
             return serviceResponse;
         }
