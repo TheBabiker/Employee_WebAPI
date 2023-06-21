@@ -81,14 +81,18 @@ namespace Employee_WebAPI.Services.EmployeeService
         }
 
         public async Task<ServiceResponse<List<GetEmployeeRequestDto>>> AddEmployee(AddEmployeeRequestDto newEmployee)
-        {
+        { //Koko Pops
             var serviceResponse = new ServiceResponse<List<GetEmployeeRequestDto>>();
             var employee = _mapper.Map<Employee>(newEmployee);
-            employee.Id = employees.Max(e => e.Id) + 1;
-            employees.Add(employee);
-            serviceResponse.Data = employees.Select(e => _mapper.Map<GetEmployeeRequestDto>(e)).ToList();
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync();
+
+            serviceResponse.Data = await _context.Employees
+                .Select(e => _mapper.Map<GetEmployeeRequestDto>(e))
+                .ToListAsync();
 
             return serviceResponse;
+
         }
 
         public async Task<ServiceResponse<GetEmployeeRequestDto>> UpdateEmployee(UpdateEmployeeRequestDto updatedEmployee)
@@ -96,23 +100,24 @@ namespace Employee_WebAPI.Services.EmployeeService
             var serviceResponse = new ServiceResponse<GetEmployeeRequestDto>();
             try
             {
-                var employee = employees.FirstOrDefault(e => e.Id == updatedEmployee.Id);
+                var employee = await _context.Employees.FindAsync(updatedEmployee.Id);
 
-                if (employee is null)
+                if (employee == null)
                     throw new Exception($"Employee with Id:{updatedEmployee.Id} not found.");
 
                 _mapper.Map(updatedEmployee, employee);
-                serviceResponse.Data = _mapper.Map<GetEmployeeRequestDto>(employee);
+                await _context.SaveChangesAsync();
 
+                serviceResponse.Data = _mapper.Map<GetEmployeeRequestDto>(employee);
             }
             catch (Exception e)
             {
                 serviceResponse.Success = false;
                 serviceResponse.Message = e.Message;
-
             }
 
             return serviceResponse;
+
 
         }
 
@@ -121,23 +126,26 @@ namespace Employee_WebAPI.Services.EmployeeService
             var serviceResponse = new ServiceResponse<List<GetEmployeeRequestDto>>();
             try
             {
-                var employee = employees.FirstOrDefault(e => e.Id == id);
+                var employee = await _context.Employees.FindAsync(id);
 
-                if (employee is null)
+                if (employee == null)
                     throw new Exception($"Employee with Id:{id} not found.");
 
-                employees.Remove(employee);
-                serviceResponse.Data = employees.Select(e => _mapper.Map<GetEmployeeRequestDto>(e)).ToList();
+                _context.Employees.Remove(employee);
+                await _context.SaveChangesAsync();
 
+                serviceResponse.Data = await _context.Employees
+                    .Select(e => _mapper.Map<GetEmployeeRequestDto>(e))
+                    .ToListAsync();
             }
             catch (Exception e)
             {
                 serviceResponse.Success = false;
                 serviceResponse.Message = e.Message;
-
             }
 
             return serviceResponse;
+
         }
     }
 }
