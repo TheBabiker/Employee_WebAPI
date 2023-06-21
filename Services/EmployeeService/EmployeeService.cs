@@ -8,12 +8,6 @@ namespace Employee_WebAPI.Services.EmployeeService
     public class EmployeeService : IEmployeeService
     {
 
-        private static List<Employee> employees = new List<Employee>{
-             new Employee{Id=0, Name = "Babiker NotSethi", Email = "Babiker@raynor.example", Gender = "male", Status = "active"},
-             new Employee {Id=1, Name = "Babiker Sethi", Email = "sethi_mohan@raynor.example", Gender = "male", Status = "inactive"},
-             new Employee {Id=2, Name = "Shashikala Ahluwalia", Email = "shashikala_ahluwalia@mann.test", Gender = "female", Status = "active"},
-
-        };
         private readonly IMapper _mapper;
         private readonly DataContext _context;
 
@@ -81,7 +75,7 @@ namespace Employee_WebAPI.Services.EmployeeService
         }
 
         public async Task<ServiceResponse<List<GetEmployeeRequestDto>>> AddEmployee(AddEmployeeRequestDto newEmployee)
-        { //Koko Pops
+        {
             var serviceResponse = new ServiceResponse<List<GetEmployeeRequestDto>>();
             var employee = _mapper.Map<Employee>(newEmployee);
             _context.Employees.Add(employee);
